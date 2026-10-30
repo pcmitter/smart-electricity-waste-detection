@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Electricity Waste Detection</title>
+    <style>
+      :root {
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        color: #182230;
+        background: #f3f6fb;
+        --blue: #1768e5;
+        --muted: #657187;
+        --line: #e3e8f0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 28px;
+        max-width: 1600px;
+        margin-inline: auto;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+      }
+      h1 {
+        margin: 0 0 7px;
+        font-size: clamp(23px, 3vw, 30px);
+      }
+      h2 {
+        font-size: 18px;
+        margin: 0 0 8px;
+      }
+      h3 {
+        font-size: 15px;
+        margin: 0;
+      }
+      p {
+        color: var(--muted);
+        margin: 0;
+        line-height: 1.5;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--blue);
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 7px;
+      }
+      button {
+        background: var(--blue);
+        color: white;
+        border: 0;
+        border-radius: 9px;
+        padding: 11px 15px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      button:hover {
+        background: #1054bd;
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+      .secondary {
+        background: #edf3ff;
+        color: #1457ba;
+      }
+      .secondary:hover {
+        background: #dce9ff;
+      }
+      .danger {
+        background: #fff0f0;
+        color: #b42323;
+        padding: 8px 10px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .card,
+      .panel {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 19px;
+        box-shadow: 0 4px 18px #1b35500a;
+      }
+      .metric-label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .metric {
+        font-size: clamp(22px, 2.5vw, 30px);
+        font-weight: 800;
+        margin-top: 12px;
+        letter-spacing: -0.03em;
+      }
+      .unit {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .panel {
+        margin-bottom: 18px;
+        overflow: hidden;
+      }
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 17px;
+      }
+      .subtle {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 11px 9px;
+        border-bottom: 1px solid #edf0f5;
+        vertical-align: middle;
+      }
+      th {
+        color: #68768b;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .config-table {
+        min-width: 920px;
+      }
+      .config-table input {
+        width: 100%;
+        min-width: 72px;
+        border: 1px solid #d9e1ec;
+        border-radius: 7px;
+        padding: 9px;
+        font: inherit;
+        color: #182230;
+        background: white;
+      }
+      .config-table .name-input {
+        min-width: 155px;
+      }
+      .config-table input:focus {
+        outline: 2px solid #a9c9ff;
+        border-color: #6fa2ff;
+      }
+      .status {
+        display: inline-block;
+        border-radius: 99px;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .NORMAL {
+        background: #e1f6e9;
+        color: #167044;
+      }
+      .WASTE {
+        background: #ffe5e5;
+        color: #a82323;
+      }
+      .HIGH_USAGE {
+        background: #fff0ce;
+        color: #865600;
+      }
+      .bar-list {
+        display: grid;
+        gap: 14px;
+      }
+      .bar-row {
+        display: grid;
+        grid-template-columns: minmax(100px, 190px) 1fr 95px;
+        gap: 12px;
+        align-items: center;
+        font-size: 13px;
+      }
+      .track {
+        height: 11px;
+        border-radius: 20px;
+        background: #eaf0f8;
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3278e6, #58b6ec);
+        border-radius: inherit;
+        transition: width 0.3s ease;
+      }
+      .notice {
+        border-radius: 10px;
+        background: #eff6ff;
+        color: #24528b;
+        padding: 12px 14px;
+        font-size: 12px;
+        line-height: 1.5;
+        margin-bottom: 14px;
+      }
+      .empty {
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .message {
+        margin-top: 12px;
+        font-size: 13px;
+        min-height: 18px;
+        color: var(--muted);
+      }
+      .message.error {
+        color: #b42323;
+      }
+      .message.success {
+        color: #167044;
+      }
+      .status-note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      @media (max-width: 900px) {
+        body {
+          padding: 17px;
+        }
+        .cards {
+          grid-template-columns: repeat(2, minmax(130px, 1fr));
+        }
+        .panel {
+          padding: 15px;
+        }
+      }
+      @media (max-width: 520px) {
+        body {
+          padding: 11px;
+        }
+        .cards {
+          gap: 8px;
+        }
+        .card {
+          padding: 13px;
+        }
+        .metric {
+          font-size: 22px;
+        }
+        .bar-row {
+          grid-template-columns: 85px 1fr 68px;
+          gap: 7px;
+          font-size: 11px;
+        }
+        .panel-head {
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <div class="eyebrow">Home energy intelligence</div>
+        <h1>Smart Electricity Monitor</h1>
+        <p>
+          Configure your appliances, monitor whole-house load, and flag possible
+          electricity waste.
+        </p>
+      </div>
+      <button id="generate" class="secondary">Generate sample reading</button>
+    </header>
+    <section class="cards">
+      <div class="card">
+        <div class="metric-label">Current whole-house load</div>
+        <div class="metric">
+          <span id="power">—</span> <span class="unit">W</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="metric-label">Total connected load</div>
+        <div class="metric">
+          <span id="connected">—</span> <span class="unit">W</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="metric-label">Estimated daily energy</div>
+        <div class="metric">
+          <span id="energy">—</span> <span class="unit">kWh/day</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="metric-label">Active waste / high-load alerts</div>
+        <div class="metric"><span id="alerts">—</span></div>
+      </div>
+    </section>
+    <section class="panel" id="setup">
+      <div class="panel-head">
+        <div>
+          <h2>1. Configure your home</h2>
+          <p class="subtle">
+            Each row is a group of similar appliances. Add separate rows when
+            the same type has different power ratings.
+          </p>
+        </div>
+        <div class="actions">
+          <button id="addRow" class="secondary">＋ Add appliance</button
+          ><button id="sample" class="secondary">Load example setup</button>
+        </div>
+      </div>
+      <div class="notice">
+        Enter quantity and power rating per unit. “Units ON” is how many are
+        currently running; “Units needed” is how many you intend to use right
+        now. If more units are ON than needed, the system flags possible waste.
+        All readings are software simulations, not measurements from a physical
+        meter.
+      </div>
+      <datalist id="applianceTypes">
+        <option>Ceiling Fan</option>
+        <option>Air Conditioner</option>
+        <option>LED Light</option>
+        <option>Geyser / Water Heater</option>
+        <option>Induction Cooktop</option>
+        <option>Washing Machine</option>
+        <option>Computer</option>
+        <option>Laptop</option>
+        <option>Refrigerator</option>
+        <option>Microwave Oven</option>
+        <option>Water Pump</option>
+        <option>Television</option>
+        <option>Iron</option>
+        <option>Dishwasher</option>
+        <option>Electric Kettle</option>
+      </datalist>
+      <div class="table-wrap">
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>Appliance / rating group</th>
+              <th>Quantity</th>
+              <th>Power per unit (W)</th>
+              <th>Units ON now</th>
+              <th>Units needed</th>
+              <th>Hours/day</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="configRows"></tbody>
+        </table>
+      </div>
+      <div class="panel-head" style="margin: 16px 0 0">
+        <span class="subtle"
+          >Example: two 1,500 W ACs and one 2,000 W geyser should be entered as
+          separate rows.</span
+        ><button id="saveConfig">Save home configuration</button>
+      </div>
+      <div id="configMessage" class="message" role="status"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>2. Whole-house appliance load</h2>
+          <p class="subtle">
+            Latest simulated draw for each configured appliance group.
+          </p>
+        </div>
+      </div>
+      <div id="bars" class="bar-list">
+        <div class="empty">
+          Configure and save your appliances to begin monitoring.
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>3. Recent readings & waste detection</h2>
+          <p class="subtle">
+            WASTE means more units are running than you marked as needed.
+          </p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Appliance group</th>
+              <th>Quantity</th>
+              <th>Units ON</th>
+              <th>Simulated power</th>
+              <th>Detection</th>
+            </tr>
+          </thead>
+          <tbody id="readings">
+            <tr>
+              <td colspan="6" class="empty">
+                Save your home configuration to generate readings.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="connection" class="status-note">Connecting to Java backend…</div>
+    </section>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const presets = {
+        "Ceiling Fan": 75,
+        "Air Conditioner": 1500,
+        "LED Light": 12,
+        "Geyser / Water Heater": 2000,
+        "Induction Cooktop": 1800,
+        "Washing Machine": 500,
+        Computer: 250,
+        Laptop: 65,
+        Refrigerator: 180,
+        "Microwave Oven": 1200,
+        "Water Pump": 750,
+        Television: 100,
+        Iron: 1000,
+        Dishwasher: 1500,
+        "Electric Kettle": 1800,
+      };
+      function escapeHtml(value) {
+        return String(value).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      function createRow(
+        item = {
+          name: "Ceiling Fan",
+          quantity: 1,
+          powerWatts: 75,
+          unitsOn: 1,
+          expectedUnits: 1,
+          dailyHours: 6,
+        },
+      ) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><input class="name-input" list="applianceTypes" aria-label="Appliance name" value="${escapeHtml(item.name || "")}" placeholder="e.g. Air Conditioner"></td><td><input type="number" min="1" max="500" step="1" aria-label="Quantity" value="${item.quantity ?? 1}"></td><td><input type="number" min="1" max="100000" step="1" aria-label="Power per unit in watts" value="${item.powerWatts ?? 75}"></td><td><input type="number" min="0" max="500" step="1" aria-label="Units currently on" value="${item.unitsOn ?? 0}"></td><td><input type="number" min="0" max="500" step="1" aria-label="Units needed" value="${item.expectedUnits ?? 0}"></td><td><input type="number" min="0" max="24" step="0.5" aria-label="Daily usage hours" value="${item.dailyHours ?? 6}"></td><td><button type="button" class="danger remove" aria-label="Remove appliance row">Remove</button></td>`;
+        const name = tr.querySelector(".name-input"),
+          power = tr.querySelectorAll("input")[2];
+        name.addEventListener("change", () => {
+          if (
+            presets[name.value] &&
+            (!power.value || Number(power.value) === 75)
+          )
+            power.value = presets[name.value];
+        });
+        tr.querySelector(".remove").addEventListener("click", () => {
+          tr.remove();
+        });
+        return tr;
+      }
+      function addRow(item) {
+        $("configRows").appendChild(createRow(item));
+      }
+      function readConfig() {
+        return [...$("configRows").querySelectorAll("tr")].map((tr) => {
+          const v = [...tr.querySelectorAll("input")].map((i) => i.value);
+          return {
+            id: 0,
+            name: v[0].trim(),
+            quantity: Number(v[1]),
+            powerWatts: Number(v[2]),
+            unitsOn: Number(v[3]),
+            expectedUnits: Number(v[4]),
+            dailyHours: Number(v[5]),
+          };
+        });
+      }
+      function validateConfig(items) {
+        if (!items.length) return "Add at least one appliance group.";
+        for (let i = 0; i < items.length; i++) {
+          const a = items[i],
+            n = i + 1;
+          if (!a.name) return `Row ${n}: enter an appliance name.`;
+          if (
+            !Number.isInteger(a.quantity) ||
+            a.quantity < 1 ||
+            a.quantity > 500
+          )
+            return `Row ${n}: quantity must be between 1 and 500.`;
+          if (
+            !Number.isFinite(a.powerWatts) ||
+            a.powerWatts <= 0 ||
+            a.powerWatts > 100000
+          )
+            return `Row ${n}: power must be between 1 and 100000 W.`;
+          if (
+            !Number.isInteger(a.unitsOn) ||
+            a.unitsOn < 0 ||
+            a.unitsOn > a.quantity
+          )
+            return `Row ${n}: units ON must be between 0 and quantity.`;
+          if (
+            !Number.isInteger(a.expectedUnits) ||
+            a.expectedUnits < 0 ||
+            a.expectedUnits > a.quantity
+          )
+            return `Row ${n}: units needed must be between 0 and quantity.`;
+          if (
+            !Number.isFinite(a.dailyHours) ||
+            a.dailyHours < 0 ||
+            a.dailyHours > 24
+          )
+            return `Row ${n}: hours/day must be from 0 to 24.`;
+        }
+        return "";
+      }
+      function formatNumber(n, d = 1) {
+        return Number(n || 0).toLocaleString(undefined, {
+          minimumFractionDigits: d,
+          maximumFractionDigits: d,
+        });
+      }
+      function formatTime(t) {
+        return new Date(t).toLocaleTimeString();
+      }
+      async function refreshDashboard() {
+        try {
+          const [sr, rr] = await Promise.all([
+            fetch("/api/summary"),
+            fetch("/api/readings"),
+          ]);
+          if (!sr.ok || !rr.ok) throw new Error("Backend request failed");
+          const s = await sr.json(),
+            rs = await rr.json();
+          $("power").textContent = formatNumber(s.activePowerWatts);
+          $("connected").textContent = formatNumber(s.connectedLoadWatts);
+          $("energy").textContent = formatNumber(s.estimatedEnergyKwh, 2);
+          $("alerts").textContent = s.activeAlerts;
+          const latest = new Map();
+          rs.forEach((r) => {
+            if (!latest.has(r.applianceId)) latest.set(r.applianceId, r);
+          });
+          const items = [...latest.values()],
+            max = Math.max(1, ...items.map((x) => x.powerWatts));
+          $("bars").innerHTML = items.length
+            ? items
+                .map(
+                  (x) =>
+                    `<div class="bar-row"><span>${escapeHtml(x.appliance)} <span class="subtle">(${x.nominalWatts} W/unit · ${x.unitsOn}/${x.quantity} on)</span></span><div class="track"><div class="fill" style="width:${Math.min(100, (x.powerWatts / max) * 100)}%"></div></div><strong>${formatNumber(x.powerWatts)} W</strong></div>`,
+                )
+                .join("")
+            : '<div class="empty">No appliances configured yet. Add appliances above and save.</div>';
+          $("readings").innerHTML = rs.length
+            ? rs
+                .slice(0, 30)
+                .map(
+                  (x) =>
+                    `<tr><td>${escapeHtml(formatTime(x.timestamp))}</td><td>${escapeHtml(x.appliance)}</td><td>${x.quantity}</td><td>${x.unitsOn}/${x.quantity}</td><td>${formatNumber(x.powerWatts)} W</td><td><span title="${escapeHtml(x.message)}" class="status ${escapeHtml(x.status)}">${escapeHtml(x.status.replace("_", " "))}</span></td></tr>`,
+                )
+                .join("")
+            : '<tr><td colspan="6" class="empty">No readings yet. Configure your home above.</td></tr>';
+          $("connection").textContent =
+            `Connected · ${s.applianceGroups} appliance groups · ${s.applianceCount} total units · ${s.totalReadings} simulated readings`;
+        } catch (e) {
+          $("connection").textContent =
+            "Cannot reach backend. Start the Spring Boot application and refresh this page.";
+        }
+      }
+      $("addRow").addEventListener("click", () =>
+        addRow({
+          name: "",
+          quantity: 1,
+          powerWatts: 100,
+          unitsOn: 0,
+          expectedUnits: 0,
+          dailyHours: 1,
+        }),
+      );
+      $("sample").addEventListener("click", () => {
+        $("configRows").innerHTML = "";
+        [
+          {
+            name: "Ceiling Fan",
+            quantity: 4,
+            powerWatts: 75,
+            unitsOn: 3,
+            expectedUnits: 2,
+            dailyHours: 8,
+          },
+          {
+            name: "Air Conditioner",
+            quantity: 2,
+            powerWatts: 1500,
+            unitsOn: 1,
+            expectedUnits: 1,
+            dailyHours: 6,
+          },
+          {
+            name: "Geyser / Water Heater",
+            quantity: 1,
+            powerWatts: 2000,
+            unitsOn: 0,
+            expectedUnits: 0,
+            dailyHours: 0.5,
+          },
+          {
+            name: "Induction Cooktop",
+            quantity: 1,
+            powerWatts: 1800,
+            unitsOn: 0,
+            expectedUnits: 0,
+            dailyHours: 1,
+          },
+          {
+            name: "Washing Machine",
+            quantity: 1,
+            powerWatts: 500,
+            unitsOn: 0,
+            expectedUnits: 0,
+            dailyHours: 0.7,
+          },
+        ].forEach(addRow);
+        $("configMessage").className = "message";
+        $("configMessage").textContent =
+          "Example values loaded. Review or edit them, then save.";
+      });
+      $("saveConfig").addEventListener("click", async () => {
+        const items = readConfig(),
+          error = validateConfig(items);
+        if (error) {
+          $("configMessage").className = "message error";
+          $("configMessage").textContent = error;
+          return;
+        }
+        const button = $("saveConfig");
+        button.disabled = true;
+        $("configMessage").className = "message";
+        $("configMessage").textContent = "Saving configuration…";
+        try {
+          const r = await fetch("/api/appliances", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(items),
+          });
+          const body = await r.json().catch(() => []);
+          if (!r.ok)
+            throw new Error(body.error || "Could not save configuration.");
+          $("configMessage").className = "message success";
+          $("configMessage").textContent =
+            `Saved ${body.length} appliance groups. Whole-house monitoring is running.`;
+          await refreshDashboard();
+        } catch (e) {
+          $("configMessage").className = "message error";
+          $("configMessage").textContent = e.message;
+        } finally {
+          button.disabled = false;
+        }
+      });
+      $("generate").addEventListener("click", async () => {
+        const b = $("generate");
+        b.disabled = true;
+        try {
+          const r = await fetch("/api/simulator/tick", { method: "POST" });
+          if (!r.ok) throw new Error();
+          await refreshDashboard();
+        } catch (e) {
+          $("connection").textContent =
+            "Could not generate readings. Check the backend terminal.";
+        } finally {
+          b.disabled = false;
+        }
+      });
+      addRow({
+        name: "Ceiling Fan",
+        quantity: 1,
+        powerWatts: 75,
+        unitsOn: 1,
+        expectedUnits: 1,
+        dailyHours: 6,
+      });
+      refreshDashboard();
+      setInterval(refreshDashboard, 3000);
+    </script>
+  </body>
+</html>
